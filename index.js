@@ -16,6 +16,10 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function stringify(value) {
+  return JSON.stringify(value);
+}
+
 function cloneAttrs(model, attrs, excludeAttrs) {
   var clone = {};
   var attributes = model.rawAttributes || model.attributes;
@@ -44,7 +48,8 @@ var Hook = {
   AFTER_UPDATE: 'afterUpdate',
   AFTER_DESTROY: 'afterDestroy',
   AFTER_SAVE: 'afterSave',
-  AFTER_BULK_CREATE: 'afterBulkCreate'
+  AFTER_BULK_CREATE: 'afterBulkCreate',
+  AFTER_BULK_UPDATE: 'afterBulkUpdate'
 };
 
 var defaults = {
@@ -64,7 +69,7 @@ function isEmpty(string) {
   return [undefined, null, NaN, ''].indexOf(string) > -1;
 }
 
-var hooks = [Hook.AFTER_CREATE, Hook.AFTER_UPDATE, Hook.AFTER_BULK_CREATE, Hook.AFTER_DESTROY];
+var hooks = [Hook.AFTER_CREATE, Hook.AFTER_UPDATE, Hook.AFTER_BULK_CREATE, Hook.AFTER_DESTROY, Hook.AFTER_BULK_UPDATE];
 
 var attrsToClone = ['type', 'field', 'get', 'set'];
 
@@ -74,6 +79,7 @@ function getVersionType(hook) {
     case Hook.AFTER_BULK_CREATE:
       return VersionType.CREATED;
     case Hook.AFTER_UPDATE:
+    case Hook.AFTER_BULK_UPDATE:
       return VersionType.UPDATED;
     case Hook.AFTER_DESTROY:
       return VersionType.DELETED;
@@ -106,7 +112,10 @@ function Version(model, customOptions) {
   var versionFieldId = '' + attributePrefix + (underscored ? '_i' : 'I') + 'd';
   var versionFieldTimestamp = '' + attributePrefix + (underscored ? '_t' : 'T') + 'imestamp';
   var versionModelName = '' + capitalize(prefix) + capitalize(model.name);
-
+  var jsonData = 'jsonData';
+  var userId = 'userId';
+  var userEmail = 'userEmail';
+  var id = 'id';
   var versionAttrs = (_versionAttrs = {}, _defineProperty(_versionAttrs, versionFieldId, {
     type: Sequelize.BIGINT,
     primaryKey: true,
@@ -117,11 +126,22 @@ function Version(model, customOptions) {
   }), _defineProperty(_versionAttrs, versionFieldTimestamp, {
     type: Sequelize.DATE,
     allowNull: false
-  }), _versionAttrs);
+  }), _defineProperty(_versionAttrs, jsonData, {
+    type: Sequelize.TEXT('medium'),
+    allowNull: false
+  }),_defineProperty(_versionAttrs, userId, {
+    type: Sequelize.STRING,
+    allowNull: true
+  }),_defineProperty(_versionAttrs, userEmail, {
+    type: Sequelize.STRING,
+    allowNull: true
+  }),_defineProperty(_versionAttrs, id, {
+    type: Sequelize.STRING,
+    allowNull: false
+  }),_versionAttrs);
 
   var cloneModelAttrs = cloneAttrs(model, attrsToClone, exclude);
-  var versionModelAttrs = Object.assign({}, cloneModelAttrs, versionAttrs);
-
+  var versionModelAttrs = Object.assign({}, versionAttrs);
   var versionModelOptions = {
     schema: schema,
     tableName: tableName,
@@ -129,10 +149,9 @@ function Version(model, customOptions) {
   };
 
   var versionModel = sequelize.define(versionModelName, versionModelAttrs, versionModelOptions);
-
   hooks.forEach(function (hook) {
     model.addHook(hook, function (instanceData, _ref) {
-      var transaction = _ref.transaction;
+      var transaction = _ref ? _ref.transaction : null;
 
       var cls = namespace || Sequelize.cls;
 
@@ -143,16 +162,30 @@ function Version(model, customOptions) {
       } else {
         versionTransaction = cls ? cls.get('transaction') : undefined;
       }
-
       var versionType = getVersionType(hook);
       var instancesData = toArray(instanceData);
-
       var versionData = instancesData.map(function (data) {
         var _Object$assign;
-
-        return Object.assign({}, clone(data), (_Object$assign = {}, _defineProperty(_Object$assign, versionFieldType, versionType), _defineProperty(_Object$assign, versionFieldTimestamp, new Date()), _Object$assign));
+        // fetch the values
+        var dataValues;
+        // If version type is update then take attributes else take dataValues
+        if(versionType === 2) {
+          dataValues = data.attributes
+        }else {
+          dataValues = data.dataValues;
+        }
+        var userIdVal = dataValues.userId ? dataValues.userId : null;
+        var userEmailVal = dataValues.userEmail ? dataValues.userEmail : null;
+        var idVal = dataValues.id ? dataValues.id : null;
+        return Object.assign({}, (_Object$assign = {},
+         _defineProperty(_Object$assign, id, idVal),
+         _defineProperty(_Object$assign, jsonData, stringify(dataValues)),
+         _defineProperty(_Object$assign, userId, userIdVal),
+         _defineProperty(_Object$assign, userEmail, userEmailVal),
+         _defineProperty(_Object$assign, versionFieldType, versionType),
+         _defineProperty(_Object$assign, versionFieldTimestamp, new Date()),
+          _Object$assign));
       });
-
       return versionModel.bulkCreate(versionData, {
         transaction: versionTransaction
       });
@@ -192,7 +225,6 @@ function Version(model, customOptions) {
       if (params.where) versionParams.where = Object.assign({}, params.where, versionParams.where);
       versionParams = Object.assign({}, params, versionParams);
     }
-
     return versionModel.findAll(versionParams);
   }
 
