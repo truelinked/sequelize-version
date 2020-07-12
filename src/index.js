@@ -224,7 +224,7 @@ function Version(model, customOptions) {
           });
           await versionModel.bulkCreate(versionData);
         } catch (err) {
-          console.log('Error in sequelize version::::', err);
+          throw new Error('Error while updating version model', err);
         }
       });
     });

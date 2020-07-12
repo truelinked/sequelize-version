@@ -284,14 +284,18 @@ function Version(model, customOptions) {
                       return versionModel.bulkCreate(versionData);
 
                     case 10:
-                      _context.next = 14;
+                      _context.next = 15;
                       break;
 
                     case 12:
                       _context.prev = 12;
                       _context.t0 = _context['catch'](1);
+                      throw new Error(
+                        'Error while updating version model',
+                        _context.t0
+                      );
 
-                    case 14:
+                    case 15:
                     case 'end':
                       return _context.stop();
                     }
