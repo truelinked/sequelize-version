@@ -12,6 +12,10 @@ function clone(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function stringify(value) {
+  return JSON.stringify(value);
+}
+
 function cloneAttrs(model, attrs, excludeAttrs) {
   const clone = {};
   const attributes = model.rawAttributes || model.attributes;
@@ -41,6 +45,9 @@ const Hook = {
   AFTER_DESTROY: 'afterDestroy',
   AFTER_SAVE: 'afterSave',
   AFTER_BULK_CREATE: 'afterBulkCreate',
+  AFTER_BULK_UPDATE: 'afterBulkUpdate',
+  BEFORE_BULK_UPDATE: 'beforeBulkUpdate',
+  BEFORE_BULK_CREATE: 'beforeBulkCreate',
 };
 
 const defaults = {
@@ -60,12 +67,9 @@ function isEmpty(string) {
   return [undefined, null, NaN, ''].indexOf(string) > -1;
 }
 
-const hooks = [
-  Hook.AFTER_CREATE,
-  Hook.AFTER_UPDATE,
-  Hook.AFTER_BULK_CREATE,
-  Hook.AFTER_DESTROY,
-];
+const hooks = [Hook.AFTER_CREATE, Hook.AFTER_UPDATE, Hook.AFTER_DESTROY];
+
+const beforeBulkHooks = [Hook.BEFORE_BULK_UPDATE, Hook.BEFORE_BULK_CREATE];
 
 const attrsToClone = ['type', 'field', 'get', 'set'];
 
@@ -75,6 +79,7 @@ function getVersionType(hook) {
   case Hook.AFTER_BULK_CREATE:
     return VersionType.CREATED;
   case Hook.AFTER_UPDATE:
+  case Hook.AFTER_BULK_UPDATE:
     return VersionType.UPDATED;
   case Hook.AFTER_DESTROY:
     return VersionType.DELETED;
@@ -112,6 +117,10 @@ function Version(model, customOptions) {
     underscored ? '_t' : 'T'
   }imestamp`;
   const versionModelName = `${capitalize(prefix)}${capitalize(model.name)}`;
+  const jsonData = 'jsonData';
+  const userId = 'userId';
+  const userEmail = 'userEmail';
+  const id = 'id';
 
   const versionAttrs = {
     [versionFieldId]: {
@@ -125,6 +134,22 @@ function Version(model, customOptions) {
     },
     [versionFieldTimestamp]: {
       type: Sequelize.DATE,
+      allowNull: false,
+    },
+    [jsonData]: {
+      type: Sequelize.TEXT('medium'),
+      allowNull: false,
+    },
+    [userId]: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    },
+    [userEmail]: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    [id]: {
+      type: Sequelize.INTEGER,
       allowNull: false,
     },
   };
@@ -144,32 +169,63 @@ function Version(model, customOptions) {
     versionModelOptions
   );
 
+  // creates version model if it doesn't already exists
+  versionModel.sync();
+
+  beforeBulkHooks.forEach(function(bulkHook) {
+    model.addHook(bulkHook, function(options) {
+      // get logged-in user information
+      options.individualHooks = true;
+      options.requestContext = {
+        randomNumber: Math.floor(Math.random() * 100),
+      };
+    });
+  });
+
   hooks.forEach(hook => {
     model.addHook(hook, (instanceData, { transaction }) => {
-      const cls = namespace || Sequelize.cls;
+      return new Promise(async (resolve, reject) => {
+        resolve();
+        try {
+          const cls = namespace || Sequelize.cls;
 
-      let versionTransaction;
+          let versionTransaction;
 
-      if (sequelize === model.sequelize) {
-        versionTransaction = cls
-          ? cls.get('transaction') || transaction
-          : transaction;
-      } else {
-        versionTransaction = cls ? cls.get('transaction') : undefined;
-      }
+          if (sequelize === model.sequelize) {
+            versionTransaction = cls
+              ? cls.get('transaction') || transaction
+              : transaction;
+          } else {
+            versionTransaction = cls ? cls.get('transaction') : undefined;
+          }
 
-      const versionType = getVersionType(hook);
-      const instancesData = toArray(instanceData);
+          const versionType = getVersionType(hook);
+          const instancesData = toArray(instanceData);
 
-      const versionData = instancesData.map(data => {
-        return Object.assign({}, clone(data), {
-          [versionFieldType]: versionType,
-          [versionFieldTimestamp]: new Date(),
-        });
-      });
+          const versionData = instancesData.map(data => {
+            const dataValues = data.dataValues;
+            const userIdVal = dataValues.userId ? dataValues.userId : null;
+            const userEmailVal = dataValues.userEmail
+              ? dataValues.userEmail
+              : null;
+            const idVal = dataValues.id ? dataValues.id : null;
 
-      return versionModel.bulkCreate(versionData, {
-        transaction: versionTransaction,
+            return Object.assign(
+              {},
+              {
+                [versionFieldType]: versionType,
+                [versionFieldTimestamp]: new Date(),
+                [jsonData]: stringify(dataValues),
+                [userId]: userIdVal,
+                [userEmail]: userEmailVal,
+                [id]: idVal,
+              }
+            );
+          });
+          await versionModel.bulkCreate(versionData);
+        } catch (err) {
+          console.log('Error in sequelize version::::', err);
+        }
       });
     });
   });
@@ -189,10 +245,8 @@ function Version(model, customOptions) {
   function getVersions(params) {
     let versionParams = {};
     const modelAttributes = model.rawAttributes || model.attributes;
-    const primaryKeys = Object.keys(
-      modelAttributes
-    ).filter(
-      attr => (modelAttributes)[attr].primaryKey
+    const primaryKeys = Object.keys(modelAttributes).filter(
+      attr => modelAttributes[attr].primaryKey
     );
 
     if (primaryKeys.length) {
