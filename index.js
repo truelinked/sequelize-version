@@ -1,47 +1,35 @@
 
 
-function _asyncToGenerator(fn) {
-  return function() {
-    var gen = fn.apply(this, arguments);
-    return new Promise(function(resolve, reject) {
-      function step(key, arg) {
-        try {
-          var info = gen[key](arg);
-          var value = info.value;
-        } catch (error) {
-          reject(error);
-          return;
-        }
-        if (info.done) {
-          resolve(value);
-        } else {
-          return Promise.resolve(value).then(
-            function(value) {
-              step('next', value);
-            },
-            function(err) {
-              step('throw', err);
-            }
-          );
-        }
-      }
-      return step('next');
-    });
-  };
-}
+var _keys = require('babel-runtime/core-js/object/keys');
 
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value,
-      enumerable: true,
-      configurable: true,
-      writable: true,
-    });
-  } else {
-    obj[key] = value;
-  }
-  return obj;
+var _keys2 = _interopRequireDefault(_keys);
+
+var _regenerator = require('babel-runtime/regenerator');
+
+var _regenerator2 = _interopRequireDefault(_regenerator);
+
+var _asyncToGenerator2 = require('babel-runtime/helpers/asyncToGenerator');
+
+var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
+
+var _promise = require('babel-runtime/core-js/promise');
+
+var _promise2 = _interopRequireDefault(_promise);
+
+var _defineProperty2 = require('babel-runtime/helpers/defineProperty');
+
+var _defineProperty3 = _interopRequireDefault(_defineProperty2);
+
+var _assign = require('babel-runtime/core-js/object/assign');
+
+var _assign2 = _interopRequireDefault(_assign);
+
+var _stringify = require('babel-runtime/core-js/json/stringify');
+
+var _stringify2 = _interopRequireDefault(_stringify);
+
+function _interopRequireDefault(obj) {
+  return obj && obj.__esModule ? obj : { default: obj };
 }
 
 var Sequelize = require('sequelize');
@@ -55,11 +43,11 @@ function toArray(value) {
 }
 
 function clone(value) {
-  return JSON.parse(JSON.stringify(value));
+  return JSON.parse((0, _stringify2.default)(value));
 }
 
 function stringify(value) {
-  return JSON.stringify(value);
+  return (0, _stringify2.default)(value);
 }
 
 function cloneAttrs(model, attrs, excludeAttrs) {
@@ -137,7 +125,12 @@ function Version(model, customOptions) {
   var _versionAttrs,
     _this = this;
 
-  var options = Object.assign({}, defaults, Version.defaults, customOptions);
+  var options = (0, _assign2.default)(
+    {},
+    defaults,
+    Version.defaults,
+    customOptions
+  );
 
   var prefix = options.prefix,
     suffix = options.suffix,
@@ -171,39 +164,43 @@ function Version(model, customOptions) {
 
   var versionAttrs =
     ((_versionAttrs = {}),
-    _defineProperty(_versionAttrs, versionFieldId, {
+    (0, _defineProperty3.default)(_versionAttrs, versionFieldId, {
       type: Sequelize.BIGINT,
       primaryKey: true,
       autoIncrement: true,
     }),
-    _defineProperty(_versionAttrs, versionFieldType, {
+    (0, _defineProperty3.default)(_versionAttrs, versionFieldType, {
       type: Sequelize.INTEGER,
       allowNull: false,
     }),
-    _defineProperty(_versionAttrs, versionFieldTimestamp, {
+    (0, _defineProperty3.default)(_versionAttrs, versionFieldTimestamp, {
       type: Sequelize.DATE,
       allowNull: false,
     }),
-    _defineProperty(_versionAttrs, jsonData, {
+    (0, _defineProperty3.default)(_versionAttrs, jsonData, {
       type: Sequelize.TEXT('medium'),
       allowNull: false,
     }),
-    _defineProperty(_versionAttrs, userId, {
+    (0, _defineProperty3.default)(_versionAttrs, userId, {
       type: Sequelize.INTEGER,
       allowNull: true,
     }),
-    _defineProperty(_versionAttrs, userEmail, {
+    (0, _defineProperty3.default)(_versionAttrs, userEmail, {
       type: Sequelize.STRING,
       allowNull: true,
     }),
-    _defineProperty(_versionAttrs, id, {
+    (0, _defineProperty3.default)(_versionAttrs, id, {
       type: Sequelize.INTEGER,
       allowNull: false,
     }),
     _versionAttrs);
 
   var cloneModelAttrs = cloneAttrs(model, attrsToClone, exclude);
-  var versionModelAttrs = Object.assign({}, cloneModelAttrs, versionAttrs);
+  var versionModelAttrs = (0, _assign2.default)(
+    {},
+    cloneModelAttrs,
+    versionAttrs
+  );
 
   var versionModelOptions = {
     schema,
@@ -234,10 +231,10 @@ function Version(model, customOptions) {
     model.addHook(hook, function(instanceData, _ref) {
       var transaction = _ref.transaction;
 
-      return new Promise(
+      return new _promise2.default(
         (function() {
-          var _ref2 = _asyncToGenerator(
-            /*#__PURE__*/ regeneratorRuntime.mark(function _callee(
+          var _ref2 = (0, _asyncToGenerator3.default)(
+            /*#__PURE__*/ _regenerator2.default.mark(function _callee(
               resolve,
               reject
             ) {
@@ -246,7 +243,7 @@ function Version(model, customOptions) {
                 versionType,
                 instancesData,
                 versionData;
-              return regeneratorRuntime.wrap(
+              return _regenerator2.default.wrap(
                 function _callee$(_context) {
                   while (1) {
                     switch ((_context.prev = _context.next)) {
@@ -269,7 +266,7 @@ function Version(model, customOptions) {
                       versionType = getVersionType(hook);
                       instancesData = toArray(instanceData);
                       versionData = instancesData.map(function(data) {
-                        var _Object$assign;
+                        var _Object$assign2;
 
                         var dataValues = data.dataValues;
                         var userIdVal = dataValues.userId
@@ -280,33 +277,8 @@ function Version(model, customOptions) {
                           : null;
                         var idVal = dataValues.id ? dataValues.id : null;
 
-                        return Object.assign(
-                          {},
-                          ((_Object$assign = {}),
-                          _defineProperty(
-                            _Object$assign,
-                            versionFieldType,
-                            versionType
-                          ),
-                          _defineProperty(
-                            _Object$assign,
-                            versionFieldTimestamp,
-                            new Date()
-                          ),
-                          _defineProperty(
-                            _Object$assign,
-                            jsonData,
-                            stringify(dataValues)
-                          ),
-                          _defineProperty(_Object$assign, userId, userIdVal),
-                          _defineProperty(
-                            _Object$assign,
-                            userEmail,
-                            userEmailVal
-                          ),
-                          _defineProperty(_Object$assign, id, idVal),
-                          _Object$assign)
-                        );
+                        return (0,
+                        _assign2.default)({}, ((_Object$assign2 = {}), (0, _defineProperty3.default)(_Object$assign2, versionFieldType, versionType), (0, _defineProperty3.default)(_Object$assign2, versionFieldTimestamp, new Date()), (0, _defineProperty3.default)(_Object$assign2, jsonData, stringify(dataValues)), (0, _defineProperty3.default)(_Object$assign2, userId, userIdVal), (0, _defineProperty3.default)(_Object$assign2, userEmail, userEmailVal), (0, _defineProperty3.default)(_Object$assign2, id, idVal), _Object$assign2));
                       });
                       _context.next = 10;
                       return versionModel.bulkCreate(versionData);
@@ -341,15 +313,27 @@ function Version(model, customOptions) {
   });
 
   versionModel.addScope('created', {
-    where: _defineProperty({}, versionFieldType, VersionType.CREATED),
+    where: (0, _defineProperty3.default)(
+      {},
+      versionFieldType,
+      VersionType.CREATED
+    ),
   });
 
   versionModel.addScope('updated', {
-    where: _defineProperty({}, versionFieldType, VersionType.UPDATED),
+    where: (0, _defineProperty3.default)(
+      {},
+      versionFieldType,
+      VersionType.UPDATED
+    ),
   });
 
   versionModel.addScope('deleted', {
-    where: _defineProperty({}, versionFieldType, VersionType.DELETED),
+    where: (0, _defineProperty3.default)(
+      {},
+      versionFieldType,
+      VersionType.DELETED
+    ),
   });
 
   function getVersions(params) {
@@ -357,28 +341,30 @@ function Version(model, customOptions) {
 
     var versionParams = {};
     var modelAttributes = model.rawAttributes || model.attributes;
-    var primaryKeys = Object.keys(modelAttributes).filter(function(attr) {
+    var primaryKeys = (0, _keys2.default)(modelAttributes).filter(function(
+      attr
+    ) {
       return modelAttributes[attr].primaryKey;
     });
 
     if (primaryKeys.length) {
       versionParams.where = primaryKeys
         .map(function(attr) {
-          return _defineProperty({}, attr, _this2[attr]);
+          return (0, _defineProperty3.default)({}, attr, _this2[attr]);
         })
         .reduce(function(a, b) {
-          return Object.assign({}, a, b);
+          return (0, _assign2.default)({}, a, b);
         });
     }
 
     if (params) {
       if (params.where)
-        versionParams.where = Object.assign(
+        versionParams.where = (0, _assign2.default)(
           {},
           params.where,
           versionParams.where
         );
-      versionParams = Object.assign({}, params, versionParams);
+      versionParams = (0, _assign2.default)({}, params, versionParams);
     }
 
     return versionModel.findAll(versionParams);
@@ -413,7 +399,7 @@ function Version(model, customOptions) {
   return versionModel;
 }
 
-Version.defaults = Object.assign({}, defaults);
+Version.defaults = (0, _assign2.default)({}, defaults);
 Version.VersionType = VersionType;
 
 module.exports = Version;

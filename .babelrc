@@ -4,7 +4,10 @@
     "node_modules"
   ],
   "plugins": [
-    "transform-remove-console"
+    "transform-remove-console",
+    ["transform-runtime", {
+      "regenerator": true
+    }]
   ]
   
 }
