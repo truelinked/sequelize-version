@@ -155,7 +155,7 @@ function Version(model, customOptions) {
   };
 
   const cloneModelAttrs = cloneAttrs(model, attrsToClone, exclude);
-  const versionModelAttrs = Object.assign({}, cloneModelAttrs, versionAttrs);
+  const versionModelAttrs = Object.assign({}, versionAttrs);
 
   const versionModelOptions = {
     schema,

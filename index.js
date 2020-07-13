@@ -196,11 +196,7 @@ function Version(model, customOptions) {
     _versionAttrs);
 
   var cloneModelAttrs = cloneAttrs(model, attrsToClone, exclude);
-  var versionModelAttrs = (0, _assign2.default)(
-    {},
-    cloneModelAttrs,
-    versionAttrs
-  );
+  var versionModelAttrs = (0, _assign2.default)({}, versionAttrs);
 
   var versionModelOptions = {
     schema,
