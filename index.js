@@ -33,6 +33,7 @@ function _interopRequireDefault(obj) {
 }
 
 var Sequelize = require('sequelize');
+var clsHook = require('cls-hooked');
 
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -234,7 +235,8 @@ function Version(model, customOptions) {
               resolve,
               reject
             ) {
-              var cls,
+              var clsSession,
+                cls,
                 versionTransaction,
                 versionType,
                 instancesData,
@@ -248,6 +250,7 @@ function Version(model, customOptions) {
                     case 0:
                       resolve();
                       _context.prev = 1;
+                      clsSession = clsHook.getNamespace('session');
                       cls = namespace || Sequelize.cls;
                       versionTransaction = void 0;
 
@@ -263,8 +266,8 @@ function Version(model, customOptions) {
 
                       versionType = getVersionType(hook);
                       instancesData = toArray(instanceData);
-                      actionByIdVal = cls.get('action_by_id');
-                      actionByEmailVal = cls.get('action_by_email');
+                      actionByIdVal = clsSession.get('action_by_id');
+                      actionByEmailVal = clsSession.get('action_by_email');
                       versionData = instancesData.map(function(data) {
                         var _Object$assign2;
 
@@ -272,22 +275,22 @@ function Version(model, customOptions) {
                         return (0,
                         _assign2.default)({}, ((_Object$assign2 = {}), (0, _defineProperty3.default)(_Object$assign2, versionFieldType, versionType), (0, _defineProperty3.default)(_Object$assign2, versionFieldTimestamp, new Date()), (0, _defineProperty3.default)(_Object$assign2, jsonData, stringify(data)), (0, _defineProperty3.default)(_Object$assign2, actionById, actionByIdVal ? actionByIdVal : null), (0, _defineProperty3.default)(_Object$assign2, actionByEmail, actionByEmailVal ? actionByEmailVal : null), (0, _defineProperty3.default)(_Object$assign2, entityId, idVal), _Object$assign2));
                       });
-                      _context.next = 12;
+                      _context.next = 13;
                       return versionModel.bulkCreate(versionData);
 
-                    case 12:
-                      _context.next = 17;
+                    case 13:
+                      _context.next = 18;
                       break;
 
-                    case 14:
-                      _context.prev = 14;
+                    case 15:
+                      _context.prev = 15;
                       _context.t0 = _context['catch'](1);
                       throw new Error(
                         'Error while updating version model',
                         _context.t0
                       );
 
-                    case 17:
+                    case 18:
                     case 'end':
                       return _context.stop();
                     }
@@ -295,7 +298,7 @@ function Version(model, customOptions) {
                 },
                 _callee,
                 _this,
-                [[1, 14]]
+                [[1, 15]]
               );
             })
           );

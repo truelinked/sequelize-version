@@ -56,5 +56,8 @@
   },
   "peerDependencies": {
     "sequelize": ">= 3.x <= 5.x"
+  },
+  "dependencies": {
+    "cls-hooked": "^4.2.2"
   }
 }
