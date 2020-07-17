@@ -118,8 +118,8 @@ function Version(model, customOptions) {
   }imestamp`;
   const versionModelName = `${capitalize(prefix)}${capitalize(model.name)}`;
   const jsonData = 'json_data';
-  const actionBy = 'action_by';
-  const email = 'email';
+  const actionById = 'action_by_id';
+  const actionByEmail = 'action_by_email';
   const entityId = 'entity_id';
 
   const versionAttrs = {
@@ -140,11 +140,11 @@ function Version(model, customOptions) {
       type: Sequelize.TEXT('medium'),
       allowNull: false,
     },
-    [actionBy]: {
+    [actionById]: {
       type: Sequelize.INTEGER,
       allowNull: true,
     },
-    [email]: {
+    [actionByEmail]: {
       type: Sequelize.STRING,
       allowNull: true,
     },
@@ -201,8 +201,8 @@ function Version(model, customOptions) {
 
           const versionType = getVersionType(hook);
           const instancesData = toArray(instanceData);
-          const actionByVal = cls.get('action_by');
-          const emailVal = cls.get('email');
+          const actionByIdVal = cls.get('action_by_id');
+          const actionByEmailVal = cls.get('action_by_email');
           const versionData = instancesData.map(data => {
             const idVal = data.id ? data.id : null;
             return Object.assign(
@@ -211,8 +211,8 @@ function Version(model, customOptions) {
                 [versionFieldType]: versionType,
                 [versionFieldTimestamp]: new Date(),
                 [jsonData]: stringify(data),
-                [actionBy]: actionByVal ? actionByVal : null,
-                [email]: emailVal ? emailVal : null,
+                [actionById]: actionByIdVal ? actionByIdVal : null,
+                [actionByEmail]: actionByEmailVal ? actionByEmailVal : null,
                 [entityId]: idVal,
               }
             );
