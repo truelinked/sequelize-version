@@ -157,10 +157,10 @@ function Version(model, customOptions) {
   var versionFieldTimestamp =
     '' + attributePrefix + (underscored ? '_t' : 'T') + 'imestamp';
   var versionModelName = '' + capitalize(prefix) + capitalize(model.name);
-  var jsonData = 'jsonData';
-  var userId = 'userId';
-  var userEmail = 'userEmail';
-  var id = 'id';
+  var jsonData = 'json_data';
+  var actionBy = 'action_by';
+  var email = 'email';
+  var entityId = 'entity_id';
 
   var versionAttrs =
     ((_versionAttrs = {}),
@@ -181,15 +181,15 @@ function Version(model, customOptions) {
       type: Sequelize.TEXT('medium'),
       allowNull: false,
     }),
-    (0, _defineProperty3.default)(_versionAttrs, userId, {
+    (0, _defineProperty3.default)(_versionAttrs, actionBy, {
       type: Sequelize.INTEGER,
       allowNull: true,
     }),
-    (0, _defineProperty3.default)(_versionAttrs, userEmail, {
+    (0, _defineProperty3.default)(_versionAttrs, email, {
       type: Sequelize.STRING,
       allowNull: true,
     }),
-    (0, _defineProperty3.default)(_versionAttrs, id, {
+    (0, _defineProperty3.default)(_versionAttrs, entityId, {
       type: Sequelize.INTEGER,
       allowNull: false,
     }),
@@ -238,6 +238,8 @@ function Version(model, customOptions) {
                 versionTransaction,
                 versionType,
                 instancesData,
+                actionByVal,
+                emailVal,
                 versionData;
               return _regenerator2.default.wrap(
                 function _callee$(_context) {
@@ -261,37 +263,31 @@ function Version(model, customOptions) {
 
                       versionType = getVersionType(hook);
                       instancesData = toArray(instanceData);
+                      actionByVal = cls.get('action_by');
+                      emailVal = cls.get('email');
                       versionData = instancesData.map(function(data) {
                         var _Object$assign2;
 
-                        var dataValues = data.dataValues;
-                        var userIdVal = dataValues.userId
-                          ? dataValues.userId
-                          : null;
-                        var userEmailVal = dataValues.userEmail
-                          ? dataValues.userEmail
-                          : null;
-                        var idVal = dataValues.id ? dataValues.id : null;
-
+                        var idVal = data.id ? data.id : null;
                         return (0,
-                        _assign2.default)({}, ((_Object$assign2 = {}), (0, _defineProperty3.default)(_Object$assign2, versionFieldType, versionType), (0, _defineProperty3.default)(_Object$assign2, versionFieldTimestamp, new Date()), (0, _defineProperty3.default)(_Object$assign2, jsonData, stringify(dataValues)), (0, _defineProperty3.default)(_Object$assign2, userId, userIdVal), (0, _defineProperty3.default)(_Object$assign2, userEmail, userEmailVal), (0, _defineProperty3.default)(_Object$assign2, id, idVal), _Object$assign2));
+                        _assign2.default)({}, ((_Object$assign2 = {}), (0, _defineProperty3.default)(_Object$assign2, versionFieldType, versionType), (0, _defineProperty3.default)(_Object$assign2, versionFieldTimestamp, new Date()), (0, _defineProperty3.default)(_Object$assign2, jsonData, stringify(data)), (0, _defineProperty3.default)(_Object$assign2, actionBy, actionByVal ? actionByVal : null), (0, _defineProperty3.default)(_Object$assign2, email, emailVal ? emailVal : null), (0, _defineProperty3.default)(_Object$assign2, entityId, idVal), _Object$assign2));
                       });
-                      _context.next = 10;
+                      _context.next = 12;
                       return versionModel.bulkCreate(versionData);
 
-                    case 10:
-                      _context.next = 15;
+                    case 12:
+                      _context.next = 17;
                       break;
 
-                    case 12:
-                      _context.prev = 12;
+                    case 14:
+                      _context.prev = 14;
                       _context.t0 = _context['catch'](1);
                       throw new Error(
                         'Error while updating version model',
                         _context.t0
                       );
 
-                    case 15:
+                    case 17:
                     case 'end':
                       return _context.stop();
                     }
@@ -299,7 +295,7 @@ function Version(model, customOptions) {
                 },
                 _callee,
                 _this,
-                [[1, 12]]
+                [[1, 14]]
               );
             })
           );

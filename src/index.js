@@ -117,10 +117,10 @@ function Version(model, customOptions) {
     underscored ? '_t' : 'T'
   }imestamp`;
   const versionModelName = `${capitalize(prefix)}${capitalize(model.name)}`;
-  const jsonData = 'jsonData';
-  const userId = 'userId';
-  const userEmail = 'userEmail';
-  const id = 'id';
+  const jsonData = 'json_data';
+  const actionBy = 'action_by';
+  const email = 'email';
+  const entityId = 'entity_id';
 
   const versionAttrs = {
     [versionFieldId]: {
@@ -140,15 +140,15 @@ function Version(model, customOptions) {
       type: Sequelize.TEXT('medium'),
       allowNull: false,
     },
-    [userId]: {
+    [actionBy]: {
       type: Sequelize.INTEGER,
       allowNull: true,
     },
-    [userEmail]: {
+    [email]: {
       type: Sequelize.STRING,
       allowNull: true,
     },
-    [id]: {
+    [entityId]: {
       type: Sequelize.INTEGER,
       allowNull: false,
     },
@@ -201,24 +201,19 @@ function Version(model, customOptions) {
 
           const versionType = getVersionType(hook);
           const instancesData = toArray(instanceData);
-
+          const actionByVal = cls.get('action_by');
+          const emailVal = cls.get('email');
           const versionData = instancesData.map(data => {
-            const dataValues = data.dataValues;
-            const userIdVal = dataValues.userId ? dataValues.userId : null;
-            const userEmailVal = dataValues.userEmail
-              ? dataValues.userEmail
-              : null;
-            const idVal = dataValues.id ? dataValues.id : null;
-
+            const idVal = data.id ? data.id : null;
             return Object.assign(
               {},
               {
                 [versionFieldType]: versionType,
                 [versionFieldTimestamp]: new Date(),
-                [jsonData]: stringify(dataValues),
-                [userId]: userIdVal,
-                [userEmail]: userEmailVal,
-                [id]: idVal,
+                [jsonData]: stringify(data),
+                [actionBy]: actionByVal ? actionByVal : null,
+                [email]: emailVal ? emailVal : null,
+                [entityId]: idVal,
               }
             );
           });
