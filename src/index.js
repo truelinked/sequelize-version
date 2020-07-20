@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize');
 const clsHook = require('cls-hooked');
+const { clsSession } = require('../../config/database');
 
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -188,7 +189,7 @@ function Version(model, customOptions) {
       return new Promise(async (resolve, reject) => {
         resolve();
         try {
-          const clsSession = clsHook.getNamespace('session');
+          const clsNamespace = clsHook.getNamespace(clsSession);
           const cls = namespace || Sequelize.cls;
 
           let versionTransaction;
@@ -203,8 +204,8 @@ function Version(model, customOptions) {
 
           const versionType = getVersionType(hook);
           const instancesData = toArray(instanceData);
-          const actionByIdVal = clsSession.get('action_by_id');
-          const actionByEmailVal = clsSession.get('action_by_email');
+          const actionByIdVal = clsNamespace.get('action_by_id');
+          const actionByEmailVal = clsNamespace.get('action_by_email');
           const versionData = instancesData.map(data => {
             const idVal = data.id ? data.id : null;
             return Object.assign(

@@ -35,6 +35,9 @@ function _interopRequireDefault(obj) {
 var Sequelize = require('sequelize');
 var clsHook = require('cls-hooked');
 
+var _require = require('../../config/database'),
+  clsSession = _require.clsSession;
+
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -235,7 +238,7 @@ function Version(model, customOptions) {
               resolve,
               reject
             ) {
-              var clsSession,
+              var clsNamespace,
                 cls,
                 versionTransaction,
                 versionType,
@@ -250,7 +253,7 @@ function Version(model, customOptions) {
                     case 0:
                       resolve();
                       _context.prev = 1;
-                      clsSession = clsHook.getNamespace('session');
+                      clsNamespace = clsHook.getNamespace(clsSession);
                       cls = namespace || Sequelize.cls;
                       versionTransaction = void 0;
 
@@ -266,8 +269,8 @@ function Version(model, customOptions) {
 
                       versionType = getVersionType(hook);
                       instancesData = toArray(instanceData);
-                      actionByIdVal = clsSession.get('action_by_id');
-                      actionByEmailVal = clsSession.get('action_by_email');
+                      actionByIdVal = clsNamespace.get('action_by_id');
+                      actionByEmailVal = clsNamespace.get('action_by_email');
                       versionData = instancesData.map(function(data) {
                         var _Object$assign2;
 
