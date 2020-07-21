@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 const clsHook = require('cls-hooked');
-const { clsSession } = require('../../config/database');
+const { CLS_SESSION } = require('../../framework/consts');
 
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -194,7 +194,7 @@ function Version(model, customOptions) {
       return new Promise(async (resolve, reject) => {
         resolve();
         try {
-          const clsNamespace = clsHook.getNamespace(clsSession);
+          const clsNamespace = clsHook.getNamespace(CLS_SESSION);
           const cls = namespace || Sequelize.cls;
 
           let versionTransaction;
@@ -209,9 +209,10 @@ function Version(model, customOptions) {
 
           const versionType = getVersionType(hook);
           const instancesData = toArray(instanceData);
-          const actionByIdVal = clsNamespace.get('action_by_id');
-          const actionByEmailVal = clsNamespace.get('action_by_email');
-          const actionByProfileVal = clsNamespace.get('action_by_profile');
+          const actionByIdVal = clsNamespace.get('action_by_id') || null;
+          const actionByEmailVal = clsNamespace.get('action_by_email') || null;
+          const actionByProfileVal =
+            clsNamespace.get('action_by_profile') || null;
           const versionData = instancesData.map(data => {
             const idVal = data.id ? data.id : null;
             return Object.assign(
@@ -220,8 +221,8 @@ function Version(model, customOptions) {
                 [versionFieldType]: versionType,
                 [versionFieldTimestamp]: new Date(),
                 [jsonData]: stringify(data),
-                [actionById]: actionByIdVal ? actionByIdVal : null,
-                [actionByEmail]: actionByEmailVal ? actionByEmailVal : null,
+                [actionById]: actionByIdVal,
+                [actionByEmail]: actionByEmailVal,
                 [entityId]: idVal,
                 [profileId]: actionByProfileVal,
               }

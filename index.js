@@ -35,8 +35,8 @@ function _interopRequireDefault(obj) {
 var Sequelize = require('sequelize');
 var clsHook = require('cls-hooked');
 
-var _require = require('../../config/database'),
-  clsSession = _require.clsSession;
+var _require = require('../../framework/consts'),
+  CLS_SESSION = _require.CLS_SESSION;
 
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -259,7 +259,7 @@ function Version(model, customOptions) {
                     case 0:
                       resolve();
                       _context.prev = 1;
-                      clsNamespace = clsHook.getNamespace(clsSession);
+                      clsNamespace = clsHook.getNamespace(CLS_SESSION);
                       cls = namespace || Sequelize.cls;
                       versionTransaction = void 0;
 
@@ -275,17 +275,18 @@ function Version(model, customOptions) {
 
                       versionType = getVersionType(hook);
                       instancesData = toArray(instanceData);
-                      actionByIdVal = clsNamespace.get('action_by_id');
-                      actionByEmailVal = clsNamespace.get('action_by_email');
-                      actionByProfileVal = clsNamespace.get(
-                        'action_by_profile'
-                      );
+                      actionByIdVal =
+                          clsNamespace.get('action_by_id') || null;
+                      actionByEmailVal =
+                          clsNamespace.get('action_by_email') || null;
+                      actionByProfileVal =
+                          clsNamespace.get('action_by_profile') || null;
                       versionData = instancesData.map(function(data) {
                         var _Object$assign2;
 
                         var idVal = data.id ? data.id : null;
                         return (0,
-                        _assign2.default)({}, ((_Object$assign2 = {}), (0, _defineProperty3.default)(_Object$assign2, versionFieldType, versionType), (0, _defineProperty3.default)(_Object$assign2, versionFieldTimestamp, new Date()), (0, _defineProperty3.default)(_Object$assign2, jsonData, stringify(data)), (0, _defineProperty3.default)(_Object$assign2, actionById, actionByIdVal ? actionByIdVal : null), (0, _defineProperty3.default)(_Object$assign2, actionByEmail, actionByEmailVal ? actionByEmailVal : null), (0, _defineProperty3.default)(_Object$assign2, entityId, idVal), (0, _defineProperty3.default)(_Object$assign2, profileId, actionByProfileVal), _Object$assign2));
+                        _assign2.default)({}, ((_Object$assign2 = {}), (0, _defineProperty3.default)(_Object$assign2, versionFieldType, versionType), (0, _defineProperty3.default)(_Object$assign2, versionFieldTimestamp, new Date()), (0, _defineProperty3.default)(_Object$assign2, jsonData, stringify(data)), (0, _defineProperty3.default)(_Object$assign2, actionById, actionByIdVal), (0, _defineProperty3.default)(_Object$assign2, actionByEmail, actionByEmailVal), (0, _defineProperty3.default)(_Object$assign2, entityId, idVal), (0, _defineProperty3.default)(_Object$assign2, profileId, actionByProfileVal), _Object$assign2));
                       });
                       _context.next = 14;
                       return versionModel.bulkCreate(versionData);
