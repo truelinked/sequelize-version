@@ -123,6 +123,7 @@ function Version(model, customOptions) {
   const actionById = 'action_by_id';
   const actionByEmail = 'action_by_email';
   const entityId = 'entity_id';
+  const profileId = 'profile_id';
 
   const versionAttrs = {
     [versionFieldId]: {
@@ -153,6 +154,10 @@ function Version(model, customOptions) {
     [entityId]: {
       type: Sequelize.INTEGER,
       allowNull: false,
+    },
+    [profileId]: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
     },
   };
 
@@ -206,6 +211,7 @@ function Version(model, customOptions) {
           const instancesData = toArray(instanceData);
           const actionByIdVal = clsNamespace.get('action_by_id');
           const actionByEmailVal = clsNamespace.get('action_by_email');
+          const actionByProfileVal = clsNamespace.get('action_by_profile');
           const versionData = instancesData.map(data => {
             const idVal = data.id ? data.id : null;
             return Object.assign(
@@ -217,6 +223,7 @@ function Version(model, customOptions) {
                 [actionById]: actionByIdVal ? actionByIdVal : null,
                 [actionByEmail]: actionByEmailVal ? actionByEmailVal : null,
                 [entityId]: idVal,
+                [profileId]: actionByProfileVal,
               }
             );
           });

@@ -165,6 +165,7 @@ function Version(model, customOptions) {
   var actionById = 'action_by_id';
   var actionByEmail = 'action_by_email';
   var entityId = 'entity_id';
+  var profileId = 'profile_id';
 
   var versionAttrs =
     ((_versionAttrs = {}),
@@ -196,6 +197,10 @@ function Version(model, customOptions) {
     (0, _defineProperty3.default)(_versionAttrs, entityId, {
       type: Sequelize.INTEGER,
       allowNull: false,
+    }),
+    (0, _defineProperty3.default)(_versionAttrs, profileId, {
+      type: Sequelize.INTEGER,
+      allowNull: true,
     }),
     _versionAttrs);
 
@@ -245,6 +250,7 @@ function Version(model, customOptions) {
                 instancesData,
                 actionByIdVal,
                 actionByEmailVal,
+                actionByProfileVal,
                 versionData;
               return _regenerator2.default.wrap(
                 function _callee$(_context) {
@@ -271,29 +277,32 @@ function Version(model, customOptions) {
                       instancesData = toArray(instanceData);
                       actionByIdVal = clsNamespace.get('action_by_id');
                       actionByEmailVal = clsNamespace.get('action_by_email');
+                      actionByProfileVal = clsNamespace.get(
+                        'action_by_profile'
+                      );
                       versionData = instancesData.map(function(data) {
                         var _Object$assign2;
 
                         var idVal = data.id ? data.id : null;
                         return (0,
-                        _assign2.default)({}, ((_Object$assign2 = {}), (0, _defineProperty3.default)(_Object$assign2, versionFieldType, versionType), (0, _defineProperty3.default)(_Object$assign2, versionFieldTimestamp, new Date()), (0, _defineProperty3.default)(_Object$assign2, jsonData, stringify(data)), (0, _defineProperty3.default)(_Object$assign2, actionById, actionByIdVal ? actionByIdVal : null), (0, _defineProperty3.default)(_Object$assign2, actionByEmail, actionByEmailVal ? actionByEmailVal : null), (0, _defineProperty3.default)(_Object$assign2, entityId, idVal), _Object$assign2));
+                        _assign2.default)({}, ((_Object$assign2 = {}), (0, _defineProperty3.default)(_Object$assign2, versionFieldType, versionType), (0, _defineProperty3.default)(_Object$assign2, versionFieldTimestamp, new Date()), (0, _defineProperty3.default)(_Object$assign2, jsonData, stringify(data)), (0, _defineProperty3.default)(_Object$assign2, actionById, actionByIdVal ? actionByIdVal : null), (0, _defineProperty3.default)(_Object$assign2, actionByEmail, actionByEmailVal ? actionByEmailVal : null), (0, _defineProperty3.default)(_Object$assign2, entityId, idVal), (0, _defineProperty3.default)(_Object$assign2, profileId, actionByProfileVal), _Object$assign2));
                       });
-                      _context.next = 13;
+                      _context.next = 14;
                       return versionModel.bulkCreate(versionData);
 
-                    case 13:
-                      _context.next = 18;
+                    case 14:
+                      _context.next = 19;
                       break;
 
-                    case 15:
-                      _context.prev = 15;
+                    case 16:
+                      _context.prev = 16;
                       _context.t0 = _context['catch'](1);
                       throw new Error(
                         'Error while updating version model',
                         _context.t0
                       );
 
-                    case 18:
+                    case 19:
                     case 'end':
                       return _context.stop();
                     }
@@ -301,7 +310,7 @@ function Version(model, customOptions) {
                 },
                 _callee,
                 _this,
-                [[1, 15]]
+                [[1, 16]]
               );
             })
           );
