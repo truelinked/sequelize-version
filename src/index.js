@@ -120,10 +120,8 @@ function Version(model, customOptions) {
   }imestamp`;
   const versionModelName = `${capitalize(prefix)}${capitalize(model.name)}`;
   const jsonData = 'json_data';
-  const actionById = 'action_by_id';
-  const actionByEmail = 'action_by_email';
   const entityId = 'entity_id';
-  const profileId = 'profile_id';
+  const changeBy = 'change_by';
 
   const versionAttrs = {
     [versionFieldId]: {
@@ -140,24 +138,16 @@ function Version(model, customOptions) {
       allowNull: false,
     },
     [jsonData]: {
-      type: Sequelize.TEXT('medium'),
+      type: Sequelize.TEXT,
       allowNull: false,
     },
-    [actionById]: {
-      type: Sequelize.INTEGER,
-      allowNull: true,
-    },
-    [actionByEmail]: {
-      type: Sequelize.STRING,
+    [changeBy]: {
+      type: Sequelize.TEXT,
       allowNull: true,
     },
     [entityId]: {
       type: Sequelize.INTEGER,
       allowNull: false,
-    },
-    [profileId]: {
-      type: Sequelize.INTEGER,
-      allowNull: true,
     },
   };
 
@@ -209,10 +199,7 @@ function Version(model, customOptions) {
 
           const versionType = getVersionType(hook);
           const instancesData = toArray(instanceData);
-          const actionByIdVal = clsNamespace.get('action_by_id') || null;
-          const actionByEmailVal = clsNamespace.get('action_by_email') || null;
-          const actionByProfileVal =
-            clsNamespace.get('action_by_profile') || null;
+          const changeByData = clsNamespace.get('change_by') || null;
           const versionData = instancesData.map(data => {
             const idVal = data.id ? data.id : null;
             return Object.assign(
@@ -221,10 +208,8 @@ function Version(model, customOptions) {
                 [versionFieldType]: versionType,
                 [versionFieldTimestamp]: new Date(),
                 [jsonData]: stringify(data),
-                [actionById]: actionByIdVal,
-                [actionByEmail]: actionByEmailVal,
                 [entityId]: idVal,
-                [profileId]: actionByProfileVal,
+                [changeBy]: changeByData,
               }
             );
           });
