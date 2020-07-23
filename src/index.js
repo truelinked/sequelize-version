@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 const clsHook = require('cls-hooked');
-const { CLS_SESSION } = require('../../framework/consts');
+let CLS_NAMESPACE;
 
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -184,7 +184,7 @@ function Version(model, customOptions) {
       return new Promise(async (resolve, reject) => {
         resolve();
         try {
-          const clsNamespace = clsHook.getNamespace(CLS_SESSION);
+          const clsNamespace = clsHook.getNamespace(CLS_NAMESPACE);
           const cls = namespace || Sequelize.cls;
 
           let versionTransaction;
@@ -289,4 +289,11 @@ function Version(model, customOptions) {
 Version.defaults = Object.assign({}, defaults);
 Version.VersionType = VersionType;
 
-module.exports = Version;
+const setContextNamespace = (_contextNamespace) => {
+  this.CLS_NAMESPACE = _contextNamespace
+}
+
+module.exports = {
+  Version,
+  setContextNamespace: setContextNamespace
+};
