@@ -34,9 +34,7 @@ function _interopRequireDefault(obj) {
 
 var Sequelize = require('sequelize');
 var clsHook = require('cls-hooked');
-
-var _require = require('../../framework/consts'),
-  CLS_SESSION = _require.CLS_SESSION;
+var CLS_CONTEXT_NAMESPACE = void 0;
 
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -46,29 +44,8 @@ function toArray(value) {
   return Array.isArray(value) ? value : [value];
 }
 
-function clone(value) {
-  return JSON.parse((0, _stringify2.default)(value));
-}
-
 function stringify(value) {
   return (0, _stringify2.default)(value);
-}
-
-function cloneAttrs(model, attrs, excludeAttrs) {
-  var clone = {};
-  var attributes = model.rawAttributes || model.attributes;
-  for (var p in attributes) {
-    if (excludeAttrs.indexOf(p) > -1) continue;
-    var nestedClone = {};
-    var attribute = attributes[p];
-    for (var np in attribute) {
-      if (attrs.indexOf(np) > -1) {
-        nestedClone[np] = attribute[np];
-      }
-    }
-    clone[p] = nestedClone;
-  }
-  return clone;
 }
 
 var VersionType = {
@@ -93,7 +70,6 @@ var defaults = {
   attributePrefix: '',
   suffix: '',
   schema: '',
-  namespace: null,
   sequelize: null,
   exclude: [],
   tableUnderscored: true,
@@ -108,8 +84,6 @@ function isEmpty(string) {
 var hooks = [Hook.AFTER_CREATE, Hook.AFTER_UPDATE, Hook.AFTER_DESTROY];
 
 var beforeBulkHooks = [Hook.BEFORE_BULK_UPDATE, Hook.BEFORE_BULK_CREATE];
-
-var attrsToClone = ['type', 'field', 'get', 'set'];
 
 function getVersionType(hook) {
   switch (hook) {
@@ -129,6 +103,11 @@ function Version(model, customOptions) {
   var _versionAttrs,
     _this = this;
 
+  // Context Namespace not found - Context namespace is mandatory
+  if (!CLS_CONTEXT_NAMESPACE) {
+    throw new Error('sequelize-version: Context namespace should be ');
+  }
+
   var options = (0, _assign2.default)(
     {},
     defaults,
@@ -138,8 +117,6 @@ function Version(model, customOptions) {
 
   var prefix = options.prefix,
     suffix = options.suffix,
-    namespace = options.namespace,
-    exclude = options.exclude,
     tableUnderscored = options.tableUnderscored,
     underscored = options.underscored;
 
@@ -194,7 +171,6 @@ function Version(model, customOptions) {
     }),
     _versionAttrs);
 
-  var cloneModelAttrs = cloneAttrs(model, attrsToClone, exclude);
   var versionModelAttrs = (0, _assign2.default)({}, versionAttrs);
 
   var versionModelOptions = {
@@ -214,28 +190,17 @@ function Version(model, customOptions) {
 
   beforeBulkHooks.forEach(function(bulkHook) {
     model.addHook(bulkHook, function(options) {
-      // get logged-in user information
       options.individualHooks = true;
-      options.requestContext = {
-        randomNumber: Math.floor(Math.random() * 100),
-      };
     });
   });
 
   hooks.forEach(function(hook) {
-    model.addHook(hook, function(instanceData, _ref) {
-      var transaction = _ref.transaction;
-
+    model.addHook(hook, function(instanceData) {
       return new _promise2.default(
         (function() {
-          var _ref2 = (0, _asyncToGenerator3.default)(
-            /*#__PURE__*/ _regenerator2.default.mark(function _callee(
-              resolve,
-              reject
-            ) {
+          var _ref = (0, _asyncToGenerator3.default)(
+            /*#__PURE__*/ _regenerator2.default.mark(function _callee(resolve) {
               var clsNamespace,
-                cls,
-                versionTransaction,
                 versionType,
                 instancesData,
                 changeByData,
@@ -247,20 +212,9 @@ function Version(model, customOptions) {
                     case 0:
                       resolve();
                       _context.prev = 1;
-                      clsNamespace = clsHook.getNamespace(CLS_SESSION);
-                      cls = namespace || Sequelize.cls;
-                      versionTransaction = void 0;
-
-                      if (sequelize === model.sequelize) {
-                        versionTransaction = cls
-                          ? cls.get('transaction') || transaction
-                          : transaction;
-                      } else {
-                        versionTransaction = cls
-                          ? cls.get('transaction')
-                          : undefined;
-                      }
-
+                      clsNamespace = clsHook.getNamespace(
+                        CLS_CONTEXT_NAMESPACE
+                      );
                       versionType = getVersionType(hook);
                       instancesData = toArray(instanceData);
                       changeByData = clsNamespace.get('change_by') || null;
@@ -269,24 +223,20 @@ function Version(model, customOptions) {
 
                         var idVal = data.id ? data.id : null;
                         return (0,
-                        _assign2.default)({}, ((_Object$assign2 = {}), (0, _defineProperty3.default)(_Object$assign2, versionFieldType, versionType), (0, _defineProperty3.default)(_Object$assign2, versionFieldTimestamp, new Date()), (0, _defineProperty3.default)(_Object$assign2, jsonData, stringify(data)), (0, _defineProperty3.default)(_Object$assign2, entityId, idVal), (0, _defineProperty3.default)(_Object$assign2, changeBy, changeByData), _Object$assign2));
+                        _assign2.default)({}, ((_Object$assign2 = {}), (0, _defineProperty3.default)(_Object$assign2, versionFieldType, versionType), (0, _defineProperty3.default)(_Object$assign2, versionFieldTimestamp, new Date()), (0, _defineProperty3.default)(_Object$assign2, jsonData, stringify(data)), (0, _defineProperty3.default)(_Object$assign2, entityId, idVal), (0, _defineProperty3.default)(_Object$assign2, changeBy, stringify(changeByData)), _Object$assign2));
                       });
-                      _context.next = 12;
+                      _context.next = 9;
                       return versionModel.bulkCreate(versionData);
 
-                    case 12:
-                      _context.next = 17;
+                    case 9:
+                      _context.next = 13;
                       break;
 
-                    case 14:
-                      _context.prev = 14;
+                    case 11:
+                      _context.prev = 11;
                       _context.t0 = _context['catch'](1);
-                      throw new Error(
-                        'Error while updating version model',
-                        _context.t0
-                      );
 
-                    case 17:
+                    case 13:
                     case 'end':
                       return _context.stop();
                     }
@@ -294,13 +244,13 @@ function Version(model, customOptions) {
                 },
                 _callee,
                 _this,
-                [[1, 14]]
+                [[1, 11]]
               );
             })
           );
 
-          return function(_x, _x2) {
-            return _ref2.apply(this, arguments);
+          return function(_x) {
+            return _ref.apply(this, arguments);
           };
         })()
       );
@@ -397,4 +347,11 @@ function Version(model, customOptions) {
 Version.defaults = (0, _assign2.default)({}, defaults);
 Version.VersionType = VersionType;
 
-module.exports = Version;
+var setContextNamespace = function setContextNamespace(_contextNamespace) {
+  CLS_CONTEXT_NAMESPACE = _contextNamespace;
+};
+
+module.exports = {
+  Version,
+  setContextNamespace,
+};

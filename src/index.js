@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 const clsHook = require('cls-hooked');
-let CLS_NAMESPACE;
+let CLS_CONTEXT_NAMESPACE;
 
 function capitalize(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
@@ -10,29 +10,8 @@ function toArray(value) {
   return Array.isArray(value) ? value : [value];
 }
 
-function clone(value) {
-  return JSON.parse(JSON.stringify(value));
-}
-
 function stringify(value) {
   return JSON.stringify(value);
-}
-
-function cloneAttrs(model, attrs, excludeAttrs) {
-  const clone = {};
-  const attributes = model.rawAttributes || model.attributes;
-  for (const p in attributes) {
-    if (excludeAttrs.indexOf(p) > -1) continue;
-    const nestedClone = {};
-    const attribute = attributes[p];
-    for (const np in attribute) {
-      if (attrs.indexOf(np) > -1) {
-        nestedClone[np] = attribute[np];
-      }
-    }
-    clone[p] = nestedClone;
-  }
-  return clone;
 }
 
 const VersionType = {
@@ -57,7 +36,6 @@ const defaults = {
   attributePrefix: '',
   suffix: '',
   schema: '',
-  namespace: null,
   sequelize: null,
   exclude: [],
   tableUnderscored: true,
@@ -72,8 +50,6 @@ function isEmpty(string) {
 const hooks = [Hook.AFTER_CREATE, Hook.AFTER_UPDATE, Hook.AFTER_DESTROY];
 
 const beforeBulkHooks = [Hook.BEFORE_BULK_UPDATE, Hook.BEFORE_BULK_CREATE];
-
-const attrsToClone = ['type', 'field', 'get', 'set'];
 
 function getVersionType(hook) {
   switch (hook) {
@@ -90,16 +66,14 @@ function getVersionType(hook) {
 }
 
 function Version(model, customOptions) {
+  // Context Namespace not found - Context namespace is mandatory
+  if (!CLS_CONTEXT_NAMESPACE) {
+    throw new Error('sequelize-version: Context namespace should be ');
+  }
+
   const options = Object.assign({}, defaults, Version.defaults, customOptions);
 
-  const {
-    prefix,
-    suffix,
-    namespace,
-    exclude,
-    tableUnderscored,
-    underscored,
-  } = options;
+  const { prefix, suffix, tableUnderscored, underscored } = options;
 
   if (isEmpty(prefix) && isEmpty(suffix)) {
     throw new Error('Prefix or suffix must be informed in options.');
@@ -151,7 +125,6 @@ function Version(model, customOptions) {
     },
   };
 
-  const cloneModelAttrs = cloneAttrs(model, attrsToClone, exclude);
   const versionModelAttrs = Object.assign({}, versionAttrs);
 
   const versionModelOptions = {
@@ -171,31 +144,16 @@ function Version(model, customOptions) {
 
   beforeBulkHooks.forEach(function(bulkHook) {
     model.addHook(bulkHook, function(options) {
-      // get logged-in user information
       options.individualHooks = true;
-      options.requestContext = {
-        randomNumber: Math.floor(Math.random() * 100),
-      };
     });
   });
 
   hooks.forEach(hook => {
-    model.addHook(hook, (instanceData, { transaction }) => {
-      return new Promise(async (resolve, reject) => {
+    model.addHook(hook, instanceData => {
+      return new Promise(async resolve => {
         resolve();
         try {
-          const clsNamespace = clsHook.getNamespace(CLS_NAMESPACE);
-          const cls = namespace || Sequelize.cls;
-
-          let versionTransaction;
-
-          if (sequelize === model.sequelize) {
-            versionTransaction = cls
-              ? cls.get('transaction') || transaction
-              : transaction;
-          } else {
-            versionTransaction = cls ? cls.get('transaction') : undefined;
-          }
+          const clsNamespace = clsHook.getNamespace(CLS_CONTEXT_NAMESPACE);
 
           const versionType = getVersionType(hook);
           const instancesData = toArray(instanceData);
@@ -209,13 +167,16 @@ function Version(model, customOptions) {
                 [versionFieldTimestamp]: new Date(),
                 [jsonData]: stringify(data),
                 [entityId]: idVal,
-                [changeBy]: changeByData,
+                [changeBy]: stringify(changeByData),
               }
             );
           });
           await versionModel.bulkCreate(versionData);
         } catch (err) {
-          throw new Error('Error while updating version model', err);
+          console.error(
+            'Sequelize-Version: Error while updating version model',
+            err
+          );
         }
       });
     });
@@ -289,11 +250,11 @@ function Version(model, customOptions) {
 Version.defaults = Object.assign({}, defaults);
 Version.VersionType = VersionType;
 
-const setContextNamespace = (_contextNamespace) => {
-  this.CLS_NAMESPACE = _contextNamespace
-}
+const setContextNamespace = _contextNamespace => {
+  CLS_CONTEXT_NAMESPACE = _contextNamespace;
+};
 
 module.exports = {
   Version,
-  setContextNamespace: setContextNamespace
+  setContextNamespace,
 };
