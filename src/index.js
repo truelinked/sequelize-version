@@ -98,6 +98,10 @@ function Version(model, customOptions) {
   const changeBy = 'change_by';
 
   const versionAttrs = {
+    [entityId]: {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    },
     [versionFieldId]: {
       type: Sequelize.BIGINT,
       primaryKey: true,
@@ -112,25 +116,27 @@ function Version(model, customOptions) {
       allowNull: false,
     },
     [jsonData]: {
-      type: Sequelize.TEXT,
-      allowNull: false,
-    },
-    [changeBy]: {
-      type: Sequelize.TEXT,
+      type: Sequelize.JSON,
       allowNull: true,
     },
-    [entityId]: {
-      type: Sequelize.INTEGER,
-      allowNull: false,
+    [changeBy]: {
+      type: Sequelize.JSON,
+      allowNull: true,
     },
   };
 
   const versionModelAttrs = Object.assign({}, versionAttrs);
 
   const versionModelOptions = {
-    schema,
     tableName,
     timestamps: false,
+    indexes: [
+      {
+        key: true,
+        fields: ['entity_id'],
+        name: `${tableName}_entity_id`,
+      },
+    ],
   };
 
   const versionModel = sequelize.define(
@@ -165,9 +171,9 @@ function Version(model, customOptions) {
               {
                 [versionFieldType]: versionType,
                 [versionFieldTimestamp]: new Date(),
-                [jsonData]: stringify(data),
+                [jsonData]: data,
                 [entityId]: idVal,
-                [changeBy]: stringify(changeByData),
+                [changeBy]: changeByData,
               }
             );
           });

@@ -144,6 +144,10 @@ function Version(model, customOptions) {
 
   var versionAttrs =
     ((_versionAttrs = {}),
+    (0, _defineProperty3.default)(_versionAttrs, entityId, {
+      type: Sequelize.INTEGER,
+      allowNull: true,
+    }),
     (0, _defineProperty3.default)(_versionAttrs, versionFieldId, {
       type: Sequelize.BIGINT,
       primaryKey: true,
@@ -158,25 +162,27 @@ function Version(model, customOptions) {
       allowNull: false,
     }),
     (0, _defineProperty3.default)(_versionAttrs, jsonData, {
-      type: Sequelize.TEXT,
-      allowNull: false,
-    }),
-    (0, _defineProperty3.default)(_versionAttrs, changeBy, {
-      type: Sequelize.TEXT,
+      type: Sequelize.JSON,
       allowNull: true,
     }),
-    (0, _defineProperty3.default)(_versionAttrs, entityId, {
-      type: Sequelize.INTEGER,
-      allowNull: false,
+    (0, _defineProperty3.default)(_versionAttrs, changeBy, {
+      type: Sequelize.JSON,
+      allowNull: true,
     }),
     _versionAttrs);
 
   var versionModelAttrs = (0, _assign2.default)({}, versionAttrs);
 
   var versionModelOptions = {
-    schema,
     tableName,
     timestamps: false,
+    indexes: [
+      {
+        key: true,
+        fields: ['entity_id'],
+        name: tableName + '_entity_id',
+      },
+    ],
   };
 
   var versionModel = sequelize.define(
@@ -223,7 +229,7 @@ function Version(model, customOptions) {
 
                         var idVal = data.id ? data.id : null;
                         return (0,
-                        _assign2.default)({}, ((_Object$assign2 = {}), (0, _defineProperty3.default)(_Object$assign2, versionFieldType, versionType), (0, _defineProperty3.default)(_Object$assign2, versionFieldTimestamp, new Date()), (0, _defineProperty3.default)(_Object$assign2, jsonData, stringify(data)), (0, _defineProperty3.default)(_Object$assign2, entityId, idVal), (0, _defineProperty3.default)(_Object$assign2, changeBy, stringify(changeByData)), _Object$assign2));
+                        _assign2.default)({}, ((_Object$assign2 = {}), (0, _defineProperty3.default)(_Object$assign2, versionFieldType, versionType), (0, _defineProperty3.default)(_Object$assign2, versionFieldTimestamp, new Date()), (0, _defineProperty3.default)(_Object$assign2, jsonData, data), (0, _defineProperty3.default)(_Object$assign2, entityId, idVal), (0, _defineProperty3.default)(_Object$assign2, changeBy, changeByData), _Object$assign2));
                       });
                       _context.next = 9;
                       return versionModel.bulkCreate(versionData);

@@ -1,6 +1,6 @@
 {
   "name": "sequelize-version",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Automatically version (audit, log) your sequelize models",
   "main": "index.js",
   "keywords": [
@@ -52,10 +52,7 @@
     "mocha": "^5.2.0",
     "pg": "^7.4.3",
     "prettier-eslint-cli": "^4.7.1",
-    "sequelize": "*"
-  },
-  "peerDependencies": {
-    "sequelize": ">= 3.x <= 5.x"
+    "sequelize": "4.43.0"
   },
   "dependencies": {
     "cls-hooked": "^4.2.2"
