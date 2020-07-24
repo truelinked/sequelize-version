@@ -183,6 +183,8 @@ function Version(model, customOptions) {
         name: tableName + '_entity_id',
       },
     ],
+    charset: 'utf8',
+    collate: 'utf8_general_ci',
   };
 
   var versionModel = sequelize.define(

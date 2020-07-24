@@ -137,6 +137,8 @@ function Version(model, customOptions) {
         name: `${tableName}_entity_id`,
       },
     ],
+    charset: 'utf8',
+    collate: 'utf8_general_ci',
   };
 
   const versionModel = sequelize.define(
